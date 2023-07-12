@@ -29,3 +29,10 @@ App.addOnKeyDown(82, function(player){
     }
 	
 });
+
+
+let number = 0;
+let blueman_dance = App.loadSpritesheet("testBoll.png", 64, 64, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 8);
+App.addOnKeyDown(80, function(player){
+    Map.putObject(x, y, blueman_dance[0]);
+});
