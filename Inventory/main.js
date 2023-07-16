@@ -1,8 +1,23 @@
 const item = {
-    Null : {
-        name : 'Null',
+    starting_Note : {
+        name : 'starting_Note',
         function : function (player) {
-            player.sendMessage("아이템이 없습니다. 아이템을 얻으세요.", 0xfff899)
+            player.showAlert(`
+            자판기 : 자판기를 통해 원하는 음료를 마실 수 있어요.
+            쓰레기 줍기 : 맵에 있는 쓰레기를 주워 쓰레기통에 버릴 수 있어요.
+            스탬프 찍기 : 왼쪽에 있는 스탬프 앱을 열고 맵 곳곳에 숨겨신 스탬프들을 찾아보세요.
+            물약 찾기 : 책을 좋아하시면 2가지의 물약을 찾을 수 있어요.
+            숨겨진 미로 : 어딘가에 있으며, 쉽지는 않아요.
+            퀴즈 방탈출 : 모둠원들끼리 머리를 맞대어 퀴즈를 풀고 방을 탈출하세요.
+
+            기본 키
+            이동 : WASD
+            실행 : F
+            인벤토리 전환 : R
+            인벤토리 아이템 사용 : E
+            공격 : Z
+            앉기 : X
+            `);
         }
     },
     cans_coke : {
@@ -100,7 +115,7 @@ function delItem(player){
 App.onJoinPlayer.Add(function (player) {
     if (player.storage == null)
     {
-        player.storage = "Null";
+        player.storage = "starting_Note";
         player.save();
     }
     player.tag = {
