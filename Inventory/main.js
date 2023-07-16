@@ -75,69 +75,53 @@ const item = {
 }
 
 function resetImage(player) {
-    App.getStorage(function () {
-    let appStorage = JSON.parse(App.storage);
     if(player.isMobile){
-        player.tag.button.image = App.loadSpritesheet(`item_img/${appStorage[player.id][player.tag.InventoryNow].name}.png`);
+        player.tag.button.image = App.loadSpritesheet(`item_img/${player.tag.Inventory[player.tag.InventoryNow].name}.png`);
 	    player.tag.button.sendUpdated();
 	} else{
-        player.tag.widget.sendMessage(appStorage[player.id][player.tag.InventoryNow].name);
+        player.tag.widget.sendMessage(player.tag.Inventory[player.tag.InventoryNow].name);
 	}
-});
 }
 
 function getItem(player, Item){
-    App.getStorage(function () {
-		let appStorage = JSON.parse(App.storage);
-		appStorage[player.id].push(Item);
-        player.tag.InventoryNow = appStorage[player.id].length-1;
-
-        App.setStorage(JSON.stringify(appStorage));
-    });
+    player.tag.Inventory.push(Item);
+    player.tag.InventoryNow = player.tag.Inventory.length-1;
     resetImage(player);
 }
 
 function delItem(player){
-    App.getStorage(function () {
-		let appStorage = JSON.parse(App.storage);
-		appStorage[player.id].splice(player.tag.InventoryNow, 1);
-		
-        player.tag.InventoryNow = player.tag.InventoryNow%appStorage[player.id].length;
-        App.setStorage(JSON.stringify(appStorage));
-	});
+    player.tag.Inventory.splice(player.tag.InventoryNow, 1);
+    player.tag.InventoryNow = player.tag.InventoryNow%player.tag.Inventory.length;
     resetImage(player);
 }
 
 
-App.onStart.Add(function(){
-	if(App.storage == null){
-		App.setStorage(JSON.stringify({}))
-	}
-})
-
 // 플레이어가 입장할 때 동작하는 함수
 App.onJoinPlayer.Add(function (player) {
-    App.getStorage(function () {
-    let appStorage = JSON.parse(App.storage);
-
-    if(!(player.id in appStorage[player.id])){
-        appStorage[player.id] = [item.Null];
+    if (player.storage == null)
+    {
+        player.storage = "Null";
+        player.save();
     }
-    
     player.tag = {
 		InventoryNow: 0,
-		Inventory: [item.Null],
+		Inventory: [],
         button: App.addMobileButton(8, 145, -20, function (player) {
-            appStorage[player.id][player.tag.InventoryNow].function(player);
+            player.tag.Inventory[player.tag.InventoryNow].function(player);
         })
-	};  
+	}; 
+
+    for(st of player.storage.split('|')){
+        player.tag.Inventory.push(item[st]);
+    }
+
     if(player.isMobile){
-        player.tag.button.image = App.loadSpritesheet(`item_img/${appStorage[player.id][player.tag.InventoryNow].name}.png`);
+        player.tag.button.image = App.loadSpritesheet(`item_img/${player.tag.Inventory[player.tag.InventoryNow].name}.png`);
 	    player.tag.button.sendUpdated();
 
         button2 = App.addMobileButton(8, 130, 40, function (player) {
-            player.tag.InventoryNow = (player.tag.InventoryNow + 1)%appStorage[player.id].length;
-            player.tag.button.image = App.loadSpritesheet(`item_img/${appStorage[player.id][player.tag.InventoryNow].name}.png`);
+            player.tag.InventoryNow = (player.tag.InventoryNow + 1)%player.tag.Inventory.length;
+            player.tag.button.image = App.loadSpritesheet(`item_img/${player.tag.Inventory[player.tag.InventoryNow].name}.png`);
             player.tag.button.sendUpdated();
         });
         button2.image = App.loadSpritesheet("mobile_changeButtonImg.png");
@@ -145,27 +129,26 @@ App.onJoinPlayer.Add(function (player) {
 
 	} else{
         player.tag.widget = player.showWidget("inventory_widget.html", "sidebar", 150, 150);
-        player.tag.widget.sendMessage(appStorage[player.id][player.tag.InventoryNow].name);
+        player.tag.widget.sendMessage(player.tag.Inventory[player.tag.InventoryNow].name);
 	}
+});
 
-    App.setStorage(JSON.stringify(appStorage));
-    });
+App.onLeavePlayer.Add(function(player){
+    storage_ = [];
+    for(st of player.tag.Inventory){
+        storage_.push(st.name);
+    }
+    player.storage = storage_.join("|");
+    player.save();
 });
 
 
 App.addOnKeyDown(69,function(player){
-    App.getStorage(function (player) {
-    let appStorage = JSON.parse(App.storage);
-    App.sayToAll(appStorage[player.id][player.tag.InventoryNow]); 
-    appStorage[player.id][player.tag.InventoryNow].function(player);
-    });
+    player.tag.Inventory[player.tag.InventoryNow].function(player);
 })
 App.addOnKeyDown(82,function(player){
-    App.getStorage(function () {
-    let appStorage = JSON.parse(App.storage);
-    player.tag.InventoryNow = (player.tag.InventoryNow + 1)%appStorage[player.id].length;
-    player.tag.widget.sendMessage(appStorage[player.id][player.tag.InventoryNow].name);
-    });
+    player.tag.InventoryNow = (player.tag.InventoryNow + 1)%player.tag.Inventory.length;
+    player.tag.widget.sendMessage(player.tag.Inventory[player.tag.InventoryNow].name);
 })
 
 
@@ -194,13 +177,10 @@ App.onObjectTouched.Add(function (player, x, y, tileID, obj) {
                 });
                 break;
             case "wastebasket":
-                App.getStorage(function () {
-                let appStorage = JSON.parse(App.storage);
-                if(appStorage[player.id][player.tag.InventoryNow].name == "trash"){
+                if(player.tag.Inventory[player.tag.InventoryNow].name == "trash"){
                     player.sendMessage("쓰레기를 쓰레기통에 버렸습니다!", 0xfff899);
                     delItem(player);
                 }
-                });
                 break;
             case "transparent potion":
                 getItem(player, item.potion_transparent);
