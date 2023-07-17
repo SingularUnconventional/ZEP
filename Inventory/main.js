@@ -84,7 +84,9 @@ const item = {
     } ,
     trash : {
         name : 'trash',
-        function : function (player) {}
+        function : function (player) {
+            player.sendMessage("쓰레기는 쓰레기통에 버리세요.", 0xfff899);
+        }
     } ,
 
 }

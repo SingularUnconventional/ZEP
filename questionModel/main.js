@@ -36,7 +36,10 @@ App.onObjectTouched.Add(function (player, x, y, tileID, obj) {
                     player.showAlert(`정답이에요!\n이제 ${player.tag.remainingQuestions.length}문제 남았어요.`);
                 }
             }
-            else if(inputText !== ''){
+            else if(inputText == ''){
+                player.sendMessage("취소");
+            }
+            else{
                 App.spawnPlayer(player.id, 93, 63);
                 player.showAlert(`아쉽지만 틀렸어요..\n${player.tag.remainingQuestions.length}문제, 조금만 힘내봐요.`);
             }
